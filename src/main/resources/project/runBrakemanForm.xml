@@ -1,0 +1,58 @@
+<editor>
+	<help>/commander/pages/@PLUGIN_NAME@/@PLUGIN_KEY@_help?s=Administration&amp;ss=Plugins#runBrakeman</help> 
+	<formElement>
+		<type>entry</type>
+		<label>Application Path:</label>
+		<property>appPath</property>
+		<required>1</required>
+		<documentation>Specifies the local path to the Ruby application to analyze.</documentation>
+	</formElement>
+    <formElement>
+        <type>select</type>
+        <label>Report File:</label>
+        <property>reportFile</property>
+        <required>0</required>
+        <documentation>To specify an output file for the results, current options are: text, html, tabs, and csv.</documentation>
+        <option><name>HTML</name><value>html</value></option>
+        <option><name>Text</name><value>text</value></option>
+        <option><name>Tabs</name><value>tabs</value></option>
+        <option><name>CSV</name><value>csv</value></option>
+    </formElement>
+    <formElement>
+		<type>radio</type>
+		<label>Verbosity:</label>
+		<property>verbosity</property>
+		<value>default</value>
+		<required>1</required>
+        <option><name>Default</name><value>default</value></option>
+		<option><name>Quiet Operation</name><value>quiet</value></option>
+		<option><name>Debug</name><value>debug</value></option> 
+		<documentation>To suppress informational warnings and just output the report by selecting 'Quiet Operation', and to see all kinds of debugging information select 'Debug'.</documentation>
+	</formElement>
+    <formElement>
+		<type>checkbox</type>
+		<label>Ignore model output:</label>
+		<property>imo</property>
+		<checkedValue>1</checkedValue>
+		<uncheckedValue>0</uncheckedValue>
+		<required>0</required>
+		<documentation>By default brakeman will report unescaped model attributes as dangerous, to disregard these warnings check this option.</documentation>
+	</formElement>
+    <formElement>
+        <type>select</type>
+        <label>Confidence level:</label>
+        <property>confidence</property>
+        <required>0</required>
+        <documentation>There are three levels of confidence: Weak (1), Medium (2) and High (3).</documentation>
+        <option><name>Weak</name><value>1</value></option>
+        <option><name>Medium</name><value>2</value></option>
+        <option><name>High</name><value>3</value></option>        
+    </formElement>
+    <formElement>
+		<type>textarea</type>
+		<label>Additional Options:</label>
+		<property>additionalOps</property>
+		<documentation>Specifies any additional options either scanning or warning options, e.g. --path or --routes option among others.</documentation>
+		<required>0</required>
+	</formElement>
+</editor>

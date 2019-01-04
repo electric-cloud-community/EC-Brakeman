@@ -1,0 +1,287 @@
+# -*-Perl-*-
+
+# brakeman-RunRest.ntest -
+#
+# ECRest
+#
+# Copyright (c) 2005-2012 Electric Cloud, Inc.
+# All rights reserved
+
+use strict;
+use ECTest;
+use ECSelenium;
+ 
+# system tests
+
+require "$::gTestFileDir/../../EC-Brakeman/systemtest/brakeman-common.ntest";
+
+
+$::grunRestCreated = 0;
+$::gProjectImported = 0;
+
+#stores the result wheter the result of the procedure is success or error
+my $outcome = "";
+
+sub importProject() {
+    assertOK($::N->import(
+                     { file =>"$::gTestFileDir/import.xml",
+               path  => "/projects/brakeman-test",
+               force => 1
+             } ), "import Brakeman");
+   
+assertOK($::N->getProcedure("brakeman-test", "Brakeman"),"Brakeman procedure exists");
+assertOK($::N->getProcedure("brakeman-test", "BrakemanWithReportFile"),"BrakemanWithReportFile procedure exists");
+assertOK($::N->getProcedure("brakeman-test", "BrakemanWithVerbosity"),"BrakemanWithVerbosity procedure exists");
+assertOK($::N->getProcedure("brakeman-test", "BrakemanWithIgnoreModelOutput"),"BrakemanWithIgnoreModelOutput procedure exists");
+assertOK($::N->getProcedure("brakeman-test", "BrakemanWithConfidenceLevel"),"BrakemanWithConfidenceLevel procedure exists");
+assertOK($::N->getProcedure("brakeman-test", "BrakemanWithAdditionalOps"),"BrakemanWithAdditionalOps procedure exists");
+
+$::gProjectImported = 1;
+}
+#1.brakeman "C:\Users\bbarrantes-as\Desktop\app"
+#2.brakeman "C:\Users\bbarrantes-as\Desktop\app" -o report_1345571065.html
+#3.brakeman "C:\Users\bbarrantes-as\Desktop\app" -d
+#4.brakeman "C:\Users\bbarrantes-as\Desktop\app" --ignore-model-output
+#5.brakeman "C:\Users\bbarrantes-as\Desktop\app" -w2
+#6.brakeman "C:\Users\bbarrantes-as\Desktop\app" --test CheckSQL,CheckCrossSiteScripting
+
+sub doSetup() {
+    if(! $::gProjectImported) {
+        importProject();
+    }
+}
+
+ntest "Brakeman", {}, sub {
+    doSetup();
+    # run test job
+    my $xpath = $::N->runProcedure("brakeman-test", 
+        { procedureName => "Brakeman",
+          pollInterval  => '1',
+          timeout => 1200,
+          actualParameter => []
+        });
+    # make sure it finished
+    my $jobId = 0;
+    my $status = "";
+             
+    assertOK($xpath, "runProcedure with errors");
+    if ($xpath) {
+        $jobId  = $xpath->findvalue("//jobId");
+        $status = $xpath->findvalue("//status");
+        $outcome = $xpath->findvalue("//outcome");
+         
+        assertTrue($jobId && $jobId ne "",'valid job id');
+        assertEq('completed',$status,"job $jobId complete");
+         
+        #abort if job did not finish
+        if ($status ne "completed") {
+            assertOK($::N->abortJob($jobId, {force => 1}));
+        }
+    }
+    # get the job details
+    $xpath = $::N->getJobDetails($jobId); 
+    
+    # Declare the expected value
+    my $expected = qq{brakeman "C:\\app"};
+          
+    my $commandLine = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+    
+    assertEq($expected, $commandLine, "Correct Brakeman Command");
+    
+};
+
+ntest "BrakemanWithReportFile", {}, sub {
+    doSetup();
+    # run test job
+    my $xpath = $::N->runProcedure("brakeman-test", 
+        { procedureName => "BrakemanWithReportFile",
+          pollInterval  => '1',
+          timeout => 1200,
+          actualParameter => []
+        });
+    # make sure it finished
+    my $jobId = 0;
+    my $status = "";
+             
+    assertOK($xpath, "runProcedure with errors");
+    if ($xpath) {
+        $jobId  = $xpath->findvalue("//jobId");
+        $status = $xpath->findvalue("//status");
+        $outcome = $xpath->findvalue("//outcome");
+         
+        assertTrue($jobId && $jobId ne "",'valid job id');
+        assertEq('completed',$status,"job $jobId complete");
+         
+        #abort if job did not finish
+        if ($status ne "completed") {
+            assertOK($::N->abortJob($jobId, {force => 1}));
+        }
+    }
+    # get the job details
+    $xpath = $::N->getJobDetails($jobId); 
+    
+    # Declare the expected value
+    my $expected = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+          
+    my $commandLine = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+    
+    assertEq($expected, $commandLine, "Correct Brakeman Command");
+    
+};
+
+ntest "BrakemanWithVerbosity", {}, sub {
+    doSetup();
+    # run test job
+    my $xpath = $::N->runProcedure("brakeman-test", 
+        { procedureName => "BrakemanWithVerbosity",
+          pollInterval  => '1',
+          timeout => 1200,
+          actualParameter => []
+        });
+    # make sure it finished
+    my $jobId = 0;
+    my $status = "";
+             
+    assertOK($xpath, "runProcedure with errors");
+    if ($xpath) {
+        $jobId  = $xpath->findvalue("//jobId");
+        $status = $xpath->findvalue("//status");
+        $outcome = $xpath->findvalue("//outcome");
+         
+        assertTrue($jobId && $jobId ne "",'valid job id');
+        assertEq('completed',$status,"job $jobId complete");
+         
+        #abort if job did not finish
+        if ($status ne "completed") {
+            assertOK($::N->abortJob($jobId, {force => 1}));
+        }
+    }
+    # get the job details
+    $xpath = $::N->getJobDetails($jobId); 
+    
+    # Declare the expected value
+    my $expected = qq{brakeman "C:\\app" -d};    
+          
+    my $commandLine = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+    
+    assertEq($expected, $commandLine, "Correct Brakeman Command");
+    
+};
+
+ntest "BrakemanWithIgnoreModelOutput", {}, sub {
+    doSetup();
+    # run test job
+    my $xpath = $::N->runProcedure("brakeman-test", 
+        { procedureName => "BrakemanWithIgnoreModelOutput",
+          pollInterval  => '1',
+          timeout => 1200,
+          actualParameter => []
+        });
+    # make sure it finished
+    my $jobId = 0;
+    my $status = "";
+             
+    assertOK($xpath, "runProcedure with errors");
+    if ($xpath) {
+        $jobId  = $xpath->findvalue("//jobId");
+        $status = $xpath->findvalue("//status");
+        $outcome = $xpath->findvalue("//outcome");
+         
+        assertTrue($jobId && $jobId ne "",'valid job id');
+        assertEq('completed',$status,"job $jobId complete");
+         
+        #abort if job did not finish
+        if ($status ne "completed") {
+            assertOK($::N->abortJob($jobId, {force => 1}));
+        }
+    }
+    # get the job details
+    $xpath = $::N->getJobDetails($jobId); 
+    
+    # Declare the expected value
+    my $expected = qq{brakeman "C:\\app" --ignore-model-output};   
+          
+    my $commandLine = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+    
+    assertEq($expected, $commandLine, "Correct Brakeman Command");
+    
+};
+
+ntest "BrakemanWithConfidenceLevel", {}, sub {
+    doSetup();
+    # run test job
+    my $xpath = $::N->runProcedure("brakeman-test", 
+        { procedureName => "BrakemanWithConfidenceLevel",
+          pollInterval  => '1',
+          timeout => 1200,
+          actualParameter => []
+        });
+    # make sure it finished
+    my $jobId = 0;
+    my $status = "";
+             
+    assertOK($xpath, "runProcedure with errors");
+    if ($xpath) {
+        $jobId  = $xpath->findvalue("//jobId");
+        $status = $xpath->findvalue("//status");
+        $outcome = $xpath->findvalue("//outcome");
+         
+        assertTrue($jobId && $jobId ne "",'valid job id');
+        assertEq('completed',$status,"job $jobId complete");
+         
+        #abort if job did not finish
+        if ($status ne "completed") {
+            assertOK($::N->abortJob($jobId, {force => 1}));
+        }
+    }
+    # get the job details
+    $xpath = $::N->getJobDetails($jobId); 
+    
+    # Declare the expected value
+    my $expected = qq{brakeman "C:\\app" -w2};
+          
+    my $commandLine = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+    
+    assertEq($expected, $commandLine, "Correct Brakeman Command");
+    
+};
+
+ntest "BrakemanWithAdditionalOps", {}, sub {
+    doSetup();
+    # run test job
+    my $xpath = $::N->runProcedure("brakeman-test", 
+        { procedureName => "BrakemanWithAdditionalOps",
+          pollInterval  => '1',
+          timeout => 1200,
+          actualParameter => []
+        });
+    # make sure it finished
+    my $jobId = 0;
+    my $status = "";
+             
+    assertOK($xpath, "runProcedure with errors");
+    if ($xpath) {
+        $jobId  = $xpath->findvalue("//jobId");
+        $status = $xpath->findvalue("//status");
+        $outcome = $xpath->findvalue("//outcome");
+         
+        assertTrue($jobId && $jobId ne "",'valid job id');
+        assertEq('completed',$status,"job $jobId complete");
+         
+        #abort if job did not finish
+        if ($status ne "completed") {
+            assertOK($::N->abortJob($jobId, {force => 1}));
+        }
+    }
+    # get the job details
+    $xpath = $::N->getJobDetails($jobId); 
+    
+    # Declare the expected value
+    my $expected = qq{brakeman "C:\\app" --test CheckSQL,CheckCrossSiteScripting};
+
+    my $commandLine = $xpath->findvalue("//property[propertyName='BrakemanCommandLine']/value");
+    
+    assertEq($expected, $commandLine, "Correct Brakeman Command");
+    
+};
+
